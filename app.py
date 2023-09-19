@@ -1,5 +1,9 @@
 # import libraries
 from flask import Flask, render_template, request
+import pandas as pd
+
+# import model
+from models.classifier import model
 
 # instanciation of app Flask
 app = Flask(__name__)
@@ -12,15 +16,24 @@ def home():
 # Route form
 @app.route('/form', methods=["POST", "GET"])
 def form():
-    data = 242
     if request.method == 'POST':
         age = request.form['age']
-        sex = request.form['sex']
-        pclass = request.form['class']
-        print(age, sex, pclass)
-
-    result = data
-    return render_template('form.html', result=result, title="resultat")
+        if age.isnumeric():
+            age = int(age)
+        else:
+            return render_template('form.html', title="resultat")
+        sex = int(request.form['sex'])
+        pclass = int(request.form['class'])
+        data = {'age':age,
+                'sex':sex,
+                'pclass':pclass}
+        df = pd.DataFrame(data, index=[0])
+        resultat = model.survie(df)
+        print(resultat)
+        
+        return render_template('form.html', result=resultat, title="resultat")
+    else:
+        return render_template('form.html', title="resultat")
 
 # variables environment
 if __name__ == '__main__':
